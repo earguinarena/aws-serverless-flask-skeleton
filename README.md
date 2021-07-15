@@ -56,6 +56,25 @@ Execute local mock
 * source venv/bin/activate
 * sls invoke local -f mainHandler --env EXAMPLE_TABLE=dev-Example --path event.json
 
+### List Cognito User Pools
+aws cognito-idp list-user-pools --max-results 20
+
+### Create a Cognito User
+Require:
+* __user_pool_id__
+* __user__
+* __user_email__
+
+aws cognito-idp admin-create-user \
+--user-pool-id __user_pool_id__ \
+--username __user__
+--user-attributes Name=email,Value=__user_email__
+
+### List Cognito Client Id
+xxxxxxxxxxxxx
+xxxxxxxxxxxxx
+
+
 ### Get JWT token
 Require:
 * __APP_CLIENT_ID__ from cognito

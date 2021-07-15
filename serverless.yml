@@ -26,7 +26,6 @@ custom:
     layer: true
   exampleTable: "${self:provider.stage}-Example"
   bucket: "example12345"
-  cognito: ""
 
 provider:
   name: aws
@@ -79,33 +78,73 @@ functions:
           method: any
           path: /{proxy+}
           cors: true
-#          authorizer:
-#            type: COGNITO_USER_POOLS
-#            authorizerId:
-#              Ref: ApiGatewayAuthorizer
+## comment to disable api gateway authorizer
+## ---->>
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+## <<----
       - http:
           method: any
           path: /
           cors: true
-#          authorizer:
-#            type: COGNITO_USER_POOLS
-#            authorizerId:
-#              Ref: ApiGatewayAuthorizer
+## comment to disable api gateway authorizer
+## ---->>
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+## <<----
 
 resources:
   Resources:
-#    ApiGatewayAuthorizer:
-#      DependsOn:
-#        - ApiGatewayRestApi
-#      Type: AWS::ApiGateway::Authorizer
-#      Properties:
-#        Name: cognito-authorizer
-#        IdentitySource: method.request.header.Authorization
-#        RestApiId:
-#          Ref: ApiGatewayRestApi
-#        Type: COGNITO_USER_POOLS
-#        ProviderARNs:
-#          - Fn::ImportValue: ${self:custom.cognito}
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: ${self:provider.stage}-${self:service}
+        AliasAttributes:
+          - email
+        UsernameConfiguration:
+          CaseSensitive: true
+        Schema:
+          - Name: email
+            AttributeDataType: String
+            Mutable: true
+            Required: true
+        AdminCreateUserConfig:
+          AllowAdminCreateUserOnly: true
+        Policies:
+          PasswordPolicy:
+            RequireLowercase: false
+            RequireSymbols: false
+            RequireNumbers: false
+            MinimumLength: 8
+            RequireUppercase: false
+    FrontendUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: frontend-app
+        GenerateSecret: false
+        UserPoolId: !Ref CognitoUserPool
+        ExplicitAuthFlows:
+          - ALLOW_CUSTOM_AUTH
+          - ALLOW_USER_SRP_AUTH
+          - ALLOW_USER_PASSWORD_AUTH #login aws cli
+          - ALLOW_REFRESH_TOKEN_AUTH
+
+    ApiGatewayAuthorizer:
+      DependsOn:
+        - ApiGatewayRestApi
+      Type: AWS::ApiGateway::Authorizer
+      Properties:
+        Name: cognito-authorizer
+        IdentitySource: method.request.header.Authorization
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        Type: COGNITO_USER_POOLS
+        ProviderARNs:
+          - Fn::GetAtt: [CognitoUserPool, Arn]
 
     ExampleTableDynamoDB:
       Type: "AWS::DynamoDB::Table"
