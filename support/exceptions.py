@@ -1,0 +1,3 @@
+class UndefinedExampleException(Exception):
+    pass
+

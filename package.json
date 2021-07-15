@@ -1,0 +1,21 @@
+{
+  "name": "journey-doctor-fe-sls",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "serverless-python-requirements": "^5.1.0",
+    "serverless-wsgi": "^1.7.6"
+  },
+  "dependencies": {
+    "ci": "^2.1.1",
+    "npm": "^7.19.1",
+    "or": "^0.2.0"
+  }
+}
